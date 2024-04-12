@@ -1,31 +1,45 @@
 import { Navigate, Route } from "react-router-dom";
 import "./App.css";
-import { RutasPrivadas, RutasPublicas } from "./models";
-import { AuthGuard } from "./guards";
-import RoutesWithNotFound from "./utils/routeswithnotfound.utils";
+import { RutasPrivadas, RutasPublicas } from "./models/index.ts";
+import { AuthGuard } from "./guards/index.ts";
+import RoutesWithNotFound from "./utils/routeswithnotfound.utils.tsx";
 import { Suspense, lazy } from "react";
-import { CircularProgress } from "@mui/material";
-import { Navbar } from "./components/NavBar";
+import { Box, CircularProgress } from "@mui/material";
+//import { Navbar } from "./components/NavBar/index.ts";
 
-const Login = lazy(() => import("./Pages/Login/Login"));
-const Private = lazy(() => import("./Pages/private/DireccionesPrivadas"));
+const Login = lazy(() => import("./Pages/Login/Login.tsx"));
+const Private = lazy(() => import("./Pages/private/DireccionesPrivadas.tsx"));
 
 function App() {
   return (
     <div className="App">
-      <Suspense fallback={<CircularProgress />}>
-        <Navbar />
-        <RoutesWithNotFound>
-          <Route path="/" element={<Navigate to={RutasPrivadas.PRIVATE} />} />
-          <Route path={RutasPublicas.LOGIN} element={<Login />} />
-          <Route element={<AuthGuard />}>
-            <Route path={`${RutasPrivadas.PRIVATE}/*`} element={<Private />} />
-          </Route>
-          {/* <Route element={<RolGuard perfil={Roles.ADMIN} />}>
-            <Route path={RutasPrivadas.MODULOS} element={<Modulos />} />
-          </Route> */}
-        </RoutesWithNotFound>
-      </Suspense>
+      <>
+        <Suspense
+          fallback={
+            <Box
+              sx={{
+                display: "flex",
+                alignContent: "center",
+                alignItems: "center",
+                marginLeft: 120,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          }
+        >
+          <RoutesWithNotFound>
+            <Route path="/" element={<Navigate to={RutasPrivadas.PRIVATE} />} />
+            <Route path={RutasPublicas.LOGIN} element={<Login />} />
+            <Route element={<AuthGuard />}>
+              <Route
+                path={`${RutasPrivadas.PRIVATE}/*`}
+                element={<Private />}
+              />
+            </Route>
+          </RoutesWithNotFound>
+        </Suspense>
+      </>
     </div>
   );
 }

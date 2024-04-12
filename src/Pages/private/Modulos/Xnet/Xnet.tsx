@@ -1,44 +1,42 @@
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
-import {
-  Alert,
-  AlertProps,
-  Box,
-  Grid,
-  Snackbar,
-  Tooltip,
-  TooltipProps,
-  styled,
-  tooltipClasses,
-} from "@mui/material";
-import { DataGridComponent, ToolBarComponent } from "..";
+import { Box, Grid, Tooltip } from "@mui/material";
+import { DataGridComponent } from "../..";
 import {
   GridActionsCellItem,
   GridColDef,
-  GridEditInputCell,
-  GridEventListener,
-  GridRenderEditCellParams,
-  GridRowEditStopReasons,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowModesModel,
   GridRowsProp,
 } from "@mui/x-data-grid";
-import { useCallback, useEffect, useState } from "react";
+import { ChangeEvent, lazy, useState } from "react";
 import {
   getVersionCapturadores,
   insertVersionCapturador,
   updateVersionCapturador,
-} from "../../../../services";
-import { useNavigate } from "react-router-dom";
-import { RutasPublicas, Sessions, TablasVersion } from "../../../../models";
-import { useDispatch } from "react-redux";
-import { resetUser } from "../../../../redux/states/user";
+} from "@/services/index.ts";
+import { PermisosTypes, TablasVersion } from "@/models/index.ts";
+import { RenderEditName } from "../../Component";
+import { useSelector } from "react-redux";
+import { AppStore } from "@/redux/store.ts";
+import { Search } from "@/Pages/private/Component/Search";
+import useManageSession from "@/Hooks/useManageSession";
+import useLoadData from "@/Hooks/useLoadData";
+const TextTitleComponent = lazy(
+  () => import("@/components/TextTitle/TextTitle.component")
+);
+const SnackBarComponent = lazy(
+  () => import("@/components/SnackBar/SnackBar.component")
+);
+
+const ToolBarComponent = lazy(() => import("./Components/ToolBar.component"));
 
 const initialXnetState: GridRowsProp = [
   {
+    ID: 0,
     TABLA: "",
     CODIGO: "",
     DESCRIPCION: "",
@@ -55,57 +53,39 @@ const initialXnetState: GridRowsProp = [
   },
 ];
 
-const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: theme.palette.error.main,
-    color: theme.palette.error.contrastText,
-  },
-}));
-
-function NameEditInputCell(props: GridRenderEditCellParams) {
-  const { error } = props;
-  const props1 = { ...props, ediTable: false };
-  return (
-    <StyledTooltip open={!!error} title={error}>
-      <GridEditInputCell {...props1} />
-    </StyledTooltip>
-  );
-}
-
-function renderEditName(params: GridRenderEditCellParams) {
-  return <NameEditInputCell {...params} />;
-}
-
 const Xnet = () => {
-  const [rows, setRows] = useState(initialXnetState);
-  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
-  //const [rowXnetTabla, setRowXnetTabla] = useState(initialRowXnetState);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [snackbar, setSnackbar] = useState<Pick<
-    AlertProps,
-    "children" | "severity"
-  > | null>(null);
-
-  const handleCloseSnackbar = () => setSnackbar(null);
-
-  const handleProcessRowUpdateError = useCallback((error: Error) => {
-    setSnackbar({ children: error.message, severity: "error" });
-  }, []);
-
-  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
-    params,
-    event
-  ) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-      event.defaultMuiPrevented = true;
-    }
-  };
+  const { managesSession } = useManageSession();
+  const userState = useSelector((store: AppStore) => store.user);
+  const {
+    rows,
+    setRows,
+    permisos,
+    rowModesModel,
+    setRowModesModel,
+    cargarDatos,
+    setSnackbar,
+    snackbar,
+    openBackdrop,
+    handleCloseSnackbar,
+    handleProcessRowUpdateError,
+    handleRowEditStop,
+  } = useLoadData(
+    initialXnetState,
+    getVersionCapturadores,
+    userState.datos.IDPerfil
+  );
+  const [search, setSearch] = useState("");
 
   const handleEditClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    if (permisos.includes(PermisosTypes.Actualizar)) {
+      setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    } else {
+      setSnackbar({
+        variant: "filled",
+        children: "Usuario no autorizado.",
+        severity: "warning",
+      });
+    }
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
@@ -114,17 +94,9 @@ const Xnet = () => {
       [id]: { mode: GridRowModes.View, ignoreModifications: true },
     });
 
-    const editedRow = rows.find((row) => row.CODIGO === id);
+    const editedRow = rows.find((row) => row.ID === id);
     if (editedRow!.isNew) {
-      setRows(rows.filter((row) => row.CODIGO !== id));
-    }
-  };
-
-  const managesSession = (status: Sessions) => {
-    if (status === Sessions.SESSION_NO_VALIDA) {
-      setRows(initialXnetState);
-      navigate(`/${RutasPublicas.LOGIN}`, { replace: true });
-      dispatch(resetUser());
+      setRows(rows.filter((row) => row.ID !== id));
     }
   };
 
@@ -133,21 +105,34 @@ const Xnet = () => {
   };
 
   const insertDatos = async (rowTablaX: GridRowModel) => {
-    await insertVersionCapturador(rowTablaX as TablasVersion)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setSnackbar({
-          children: "User successfully saved",
-          severity: "success",
-        });
-      })
-      .catch((err) => {
-        const message = err.message.match("SESSION_NO_VALIDA")?.[0];
-        if (message === Sessions.SESSION_NO_VALIDA) {
+    if (rowTablaX.CODIGO !== "" && rowTablaX.TABLA !== "") {
+      await insertVersionCapturador(rowTablaX as TablasVersion)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+          if (data.status === "Error") {
+            setSnackbar({
+              children: data.data.ErrorDetail,
+              severity: "error",
+            });
+          } else {
+            setSnackbar({
+              children: "Registro insertado.",
+              severity: "success",
+            });
+            cargarDatos();
+          }
+        })
+        .catch((err) => {
+          const message = err.message.match("SESSION_NO_VALIDA")?.[0];
           managesSession(message);
-        }
+        });
+    } else {
+      setSnackbar({
+        children: "Campos TABLA y CODIGOS vacíos.",
+        severity: "warning",
       });
+    }
   };
 
   const updateDatos = async (rowTablaX: GridRowModel) => {
@@ -155,16 +140,22 @@ const Xnet = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        setSnackbar({
-          children: "User successfully saved",
-          severity: "success",
-        });
+        if (data.status === "Error") {
+          setSnackbar({
+            children: data.data.ErrorDetail,
+            severity: "error",
+          });
+        } else {
+          setSnackbar({
+            children: "Registro actualizado.",
+            severity: "success",
+          });
+          cargarDatos();
+        }
       })
       .catch((err) => {
         const message = err.message.match("SESSION_NO_VALIDA")?.[0];
-        if (message === Sessions.SESSION_NO_VALIDA) {
-          managesSession(message);
-        }
+        managesSession(message);
       });
   };
 
@@ -176,18 +167,21 @@ const Xnet = () => {
       updateDatos(newRow);
     }
 
-    setRows(
-      rows.map((row) =>
-        row.TABLA === newRow.TABLA && row.CODIGO === newRow.CODIGO
-          ? updatedRow
-          : row
-      )
-    );
+    setRows(rows.map((row) => (row.ID === newRow.ID ? updatedRow : row)));
+
     return updatedRow;
   };
 
   const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
-    setRowModesModel(newRowModesModel);
+    if (permisos.includes(PermisosTypes.Actualizar)) {
+      setRowModesModel(newRowModesModel);
+    } else {
+      setSnackbar({
+        variant: "filled",
+        children: "Usuario no autorizado.",
+        severity: "warning",
+      });
+    }
   };
 
   const columns: GridColDef[] = [
@@ -196,6 +190,7 @@ const Xnet = () => {
       headerName: "Tabla",
       headerClassName: "headerGrid",
       editable: true,
+      flex: 0.5,
       type: "string",
       preProcessEditCellProps: (params) => {
         const hasError =
@@ -207,12 +202,13 @@ const Xnet = () => {
           error: hasError,
         };
       },
-      renderEditCell: renderEditName,
+      renderEditCell: RenderEditName,
     },
     {
       field: "CODIGO",
       headerName: "Codigo",
-      width: 120,
+      flex: 1,
+      minWidth: 120,
       headerClassName: "headerGrid",
       editable: true,
       type: "string",
@@ -227,12 +223,13 @@ const Xnet = () => {
           error: hasError,
         };
       },
-      renderEditCell: renderEditName,
+      renderEditCell: RenderEditName,
     },
     {
       field: "DESCRIPCION",
       headerName: "Descripcion",
-      width: 170,
+      flex: 1,
+      minWidth: 200,
       headerClassName: "headerGrid",
       editable: true,
       type: "string",
@@ -241,6 +238,8 @@ const Xnet = () => {
       field: "VERSION",
       headerName: "Version",
       headerClassName: "headerGrid",
+      flex: 0.5,
+      minWidth: 80,
       editable: true,
       type: "string",
     },
@@ -249,6 +248,7 @@ const Xnet = () => {
       headerName: "Activo",
       headerClassName: "headerGrid",
       editable: true,
+      flex: 0.5,
       type: "string",
     },
     {
@@ -263,12 +263,16 @@ const Xnet = () => {
       headerName: "Siglas",
       headerClassName: "headerGrid",
       editable: true,
+      minWidth: 100,
+      flex: 0.5,
+      //align: "center",
       type: "string",
     },
     {
       field: "LoginPorInstitucion",
       headerName: "Login Por Institucion",
-      width: 150,
+      flex: 1,
+      minWidth: 140,
       headerClassName: "headerGrid",
       editable: true,
       type: "boolean",
@@ -278,12 +282,14 @@ const Xnet = () => {
       headerName: "Imagen",
       headerClassName: "headerGrid",
       editable: true,
+      flex: 1,
       type: "string",
     },
     {
       field: "ReportaDatos",
       headerName: "Reporta Datos",
-      width: 120,
+      flex: 0.5,
+      minWidth: 120,
       headerClassName: "headerGrid",
       editable: true,
       type: "boolean",
@@ -291,7 +297,8 @@ const Xnet = () => {
     {
       field: "AccesoAInstituciones",
       headerName: "Acceso A Instituciones",
-      width: 155,
+      flex: 0.5,
+      minWidth: 155,
       headerClassName: "headerGrid",
       editable: true,
       type: "boolean",
@@ -307,7 +314,8 @@ const Xnet = () => {
     {
       field: "AccesoTipoInstitucion",
       headerName: "Acceso Tipo Institucion",
-      width: 160,
+      flex: 0.5,
+      //width: 160,
       headerClassName: "headerGrid",
       editable: true,
       type: "string",
@@ -316,117 +324,138 @@ const Xnet = () => {
       field: "actions",
       type: "actions",
       headerName: "Actions ",
-      width: 100,
+      flex: 0.1,
+      minWidth: 100,
       cellClassName: "actions",
       headerClassName: "headerGrid",
       getActions: ({ id }) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
         if (isInEditMode) {
           return [
-            <GridActionsCellItem
-              icon={<SaveIcon />}
-              label="Save"
-              sx={{
-                color: "primary.main",
-              }}
-              onClick={handleSaveClick(id)}
-            />,
-            <GridActionsCellItem
-              icon={<CancelIcon />}
-              label="Cancel"
-              className="textPrimary"
-              onClick={handleCancelClick(id)}
-              color="inherit"
-            />,
+            <Tooltip title="Guardar">
+              <GridActionsCellItem
+                icon={<SaveIcon />}
+                label="Save"
+                sx={{
+                  color: "#3A833A",
+                }}
+                onClick={handleSaveClick(id)}
+              />
+            </Tooltip>,
+            <Tooltip title="Cancelar">
+              <GridActionsCellItem
+                icon={<CancelIcon />}
+                label="Cancel"
+                //className="textPrimary"
+                onClick={handleCancelClick(id)}
+                sx={{ color: "darkred" }}
+                // color="inherit"
+              />
+            </Tooltip>,
           ];
         }
 
         return [
-          <GridActionsCellItem
-            icon={<EditIcon />}
-            label="Edit"
-            className="textPrimary"
-            onClick={handleEditClick(id)}
-            color="inherit"
-          />,
+          <Tooltip title="Editar">
+            <GridActionsCellItem
+              icon={<EditIcon sx={{ color: "#1d8df8" }} />}
+              label="Edit"
+              className="textPrimary"
+              onClick={handleEditClick(id)}
+              // color="inherit"
+            />
+          </Tooltip>,
         ];
       },
     },
   ];
 
-  const cargaDatos = async () => {
-    await getVersionCapturadores()
-      .then((res) => res.json())
-      .then((datos) => setRows(datos.data))
-      .catch((err) => {
-        const status = err.message.match("SESSION_NO_VALIDA");
-        console.log(err);
-        managesSession(status?.[0]);
-      });
+  const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
   };
 
-  useEffect(() => {
-    cargaDatos();
-    let count = 0;
-    console.log(count++);
-  }, []);
+  const filteredRows = rows.filter((item) =>
+    item.CODIGO.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+  );
 
   return (
     <Grid
-      component="main"
+      container
+      spacing={1}
+      //rowSpacing={8}
+      // direction="column"
+      flexDirection={"column"}
       sx={{
-        display: "flex",
+        //  width: "100em",
+        marginLeft: "1rem",
+        background: "#fafafa",
+        borderRadius: "25px",
+        padding: "25px",
       }}
+      justifyContent={"space-around"}
+      alignItems={"center"}
     >
-      <Grid container spacing={2} rowSpacing={8} direction="column">
-        <Grid item sx={{ width: "500px" }}></Grid>
-        <Grid
-          item
-          sx={{
-            width: "100%",
-            "& .headerGrid": {
-              backgroundColor: "rgb(14 14 14 / 87%)",
-              color: "white",
-            },
-            "& .actions": {
-              color: "text.secondary",
-            },
-            "& .textPrimary": {
-              color: "text.primary",
-            },
-          }}
-        >
-          <Box sx={{ height: 700 }}>
-            <DataGridComponent
-              columns={columns}
-              rows={rows}
-              editMode="row"
-              getRowId={(row) => row.TABLA + row.CODIGO}
-              sx={{ boxShadow: 5 }}
-              rowModesModel={rowModesModel}
-              onRowModesModelChange={handleRowModesModelChange}
-              onRowEditStop={handleRowEditStop}
-              processRowUpdate={processRowUpdate}
-              onProcessRowUpdateError={handleProcessRowUpdateError}
-              slots={{
-                toolbar: ToolBarComponent,
-              }}
-              slotProps={{
-                toolbar: { setRows, setRowModesModel },
-              }}
+      <Grid
+        item
+        xs
+        lg
+        sm
+        md
+        sx={{
+          width: "100%",
+          "& .headerGrid": {
+            backgroundColor: "rgb(14 14 14 / 87%)",
+            color: "white",
+          },
+          "& .actions": {
+            color: "text.secondary",
+          },
+          "& .textPrimary": {
+            color: "text.primary",
+          },
+          "& .css-1j7qk7u": {
+            color: "#fafafa",
+          },
+          "& .css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root": {
+            color: "rgb(245 245 245 / 54%)",
+          },
+          borderRadius: "25px",
+        }}
+      >
+        <TextTitleComponent
+          variante="h2"
+          color="#353535de"
+          titleName="XNET TABLAS"
+        />
+
+        <Search placeholder="Buscar..." onSearchChange={onSearchChange} />
+        <Box sx={{ height: 700, mt: 5 }}>
+          <DataGridComponent
+            columns={columns}
+            rows={filteredRows}
+            editMode="row"
+            getRowId={(row: GridRowModel) => row.ID}
+            sx={{ boxShadow: 5, borderRadius: "25px" }}
+            rowModesModel={rowModesModel}
+            onRowModesModelChange={handleRowModesModelChange}
+            onRowEditStop={handleRowEditStop}
+            processRowUpdate={processRowUpdate}
+            onProcessRowUpdateError={handleProcessRowUpdateError}
+            slots={{
+              toolbar: ToolBarComponent,
+            }}
+            slotProps={{
+              toolbar: { setRows, setRowModesModel, rows, permisos },
+            }}
+            loading={openBackdrop}
+          />
+          {!!snackbar && (
+            <SnackBarComponent
+              snackbar={snackbar}
+              onClose={handleCloseSnackbar}
             />
-            {!!snackbar && (
-              <Snackbar
-                open
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                onClose={handleCloseSnackbar}
-                autoHideDuration={6000}
-              >
-                <Alert {...snackbar} onClose={handleCloseSnackbar} />
-              </Snackbar>
-            )}
-          </Box>
-        </Grid>
+          )}
+        </Box>
       </Grid>
     </Grid>
   );

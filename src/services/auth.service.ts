@@ -1,4 +1,4 @@
-import { API } from "../config/constants"
+import { API } from "@/config/constants"
 
 const baseURL = API
 const login = baseURL + 'v1/auth/login'

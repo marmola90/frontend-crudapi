@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import * as path from 'path'
 
 const replacePlugin = (mode) => {
   return {
@@ -8,7 +9,7 @@ const replacePlugin = (mode) => {
       if (mode === "production") {
         return html.replace(
           "<!-- REACT_ENV -->",
-          `<script src="./config/front.env.js"></script`
+          ` <script src="/config/front.env.js"></script>`
         )
       }
       return null
@@ -25,6 +26,10 @@ export default defineConfig(({ mode }) => ({
     },
     host: true, // needed for the Docker Container port mapping to work
     strictPort: true,
-    port: 3001, // you can replace this port with any port
-  }
+    port: 3002, // you can replace this port with any port
+  },
+  resolve: {
+    alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }], //alias path
+  },
 }))
+

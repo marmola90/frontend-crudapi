@@ -4,7 +4,4 @@ declare global {
   }
 }
 
-export const API =
-  import.meta.env.VITE_BASE_URL ??
-  window._env_?.API ??
-  "http://localhost:3000/api";
+export const API = window._env_?.API ?? import.meta.env.VITE_BASE_URL;

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Roles, UserInfo } from "../../models";
-import { clearLocalStorage, persistLocalStorage } from "../../utils";
+import { Roles, UserInfo } from "@/models";
+import { clearLocalStorage, persistLocalStorage } from "@/utils";
 
 export const userKey = 'user'
 

@@ -1,4 +1,4 @@
-import { Roles } from "."
+import { IPerfil, Roles } from "."
 
 export interface UserInfo {
   token: string | null
@@ -7,4 +7,20 @@ export interface UserInfo {
     EstaActivo: boolean | null | string,
     IDPerfil: Roles,
   }
+}
+
+export interface IUser extends Pick<IPerfil, 'IDPerfil'> {
+  Id: number
+  Usuario: string
+  EstaActivo: boolean
+}
+
+export interface IUserAsignado {
+  ID: number
+  IDPerfil: number | null
+}
+
+export interface IRolesCantidadAsignados {
+  Descripcion: string
+  Cantidad: number
 }

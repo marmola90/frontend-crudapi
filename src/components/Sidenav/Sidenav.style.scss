@@ -1,0 +1,177 @@
+.SideBarWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15rem;
+  height: 100vh;
+  display: block;
+  z-index: 2;
+  //padding: 2rem 0;
+  box-shadow: 1px -2px 3px 2px #242424;
+  transition: all 1.3s ease;
+  background: linear-gradient(5deg, #1a1a1a, #242424);
+
+  .SideBarBody {
+    //background: linear-gradient(5deg, #1a1a1a, #242424);
+    height: 100vh;
+    overflow: hidden;
+    transition: all 1.5s ease-in-out;
+  }
+
+  .UnderList {
+    position: relative;
+    list-style: none;
+    padding: 1rem;
+    display: initial;
+    transition: all 0.5s ease;
+
+    .NavLinks {
+      position: relative;
+      color: #ffff;
+      padding: 1rem 1rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      margin: 5px 10px;
+      border-radius: 10px;
+
+      &:hover {
+        background: #ffffff24;
+      }
+
+      &:active {
+        background: #ffffff;
+        color: #2497ff;
+        transition: all 0.4s ease;
+      }
+    }
+
+    .SubNavLinks {
+      color: #ffff;
+      padding: 5px 6px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      margin-left: 2.5rem;
+      border-radius: 10px;
+      font-size: 13px;
+      transition: all 1.5s ease-out;
+
+      &:hover {
+        background: #ffffff24;
+      }
+
+      &:active {
+        background: #ffffff;
+        color: #2497ff;
+        transition: all 0.4s ease;
+      }
+    }
+  }
+
+  .burgerContainer {
+    content: "";
+    background-color: #1976ce;
+    position: absolute;
+    right: calc(-35px / 2);
+    top: cal(9rem / 1.15);
+    width: 35px;
+    height: 35px;
+    border-radius: 2rem;
+    z-index: 1;
+
+    .burgerTrigger {
+      content: "";
+      width: 35px;
+      height: 35px;
+      background-color: darkslategrey;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0;
+    }
+
+    .burgerMenu {
+      content: "";
+      background-color: #1976ce;
+      position: relative;
+      z-index: 1;
+      width: 20px;
+      height: 3px;
+      border-radius: 2rem;
+      bottom: calc(35px / 2);
+      left: 0.45rem;
+      cursor: pointer;
+    }
+    .burgerMenu::after {
+      content: "";
+      background-color: #fff;
+      position: absolute;
+      z-index: 1;
+      width: 20px;
+      height: 3px;
+      border-radius: 2rem;
+      top: 0.4rem;
+      transform: translateY(-0.4rem) rotate(45deg);
+    }
+
+    .burgerMenu::before {
+      content: "";
+      background-color: #fff;
+      position: absolute;
+      z-index: 1;
+      width: 20px;
+      height: 3px;
+      border-radius: 2rem;
+      top: -0.4rem;
+      transform: translateY(0.4rem) rotate(-45deg);
+    }
+  }
+
+  .burgerContainer::after {
+    content: "";
+    position: absolute;
+    right: 35px;
+    top: calc(35px / 2);
+    z-index: 0;
+    width: calc(6rem + 15rem);
+    background-color: #cfcfcf2d;
+    height: 1px;
+  }
+}
+
+.SideBarWrapper.active {
+  width: 4rem;
+
+  .SideBarBody {
+    //background: linear-gradient(5deg, #1a1a1a, #242424);
+
+    transition: all 2.5s ease-in-out;
+  }
+
+  .burgerContainer.active {
+    .burgerMenu {
+      background-color: #fff;
+    }
+
+    .burgerMenu::before {
+      transform: translateY(0rem) rotate(0deg);
+    }
+
+    .burgerMenu::after {
+      transform: translateY(0rem) rotate(0deg);
+    }
+  }
+
+  .UnderList {
+    //  padding: 1rem;
+
+    .NavLinks {
+      padding: 1rem 0.9rem;
+      margin: 5px 11px;
+    }
+    .SubNavLinks {
+      margin-left: 1.5rem;
+      transition: all 0.4s ease;
+    }
+  }
+}

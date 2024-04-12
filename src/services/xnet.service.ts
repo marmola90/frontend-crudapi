@@ -1,6 +1,6 @@
-import { authHeather } from "../utils"
-import { TablasVersion } from "../models"
-import { API } from "../config/constants"
+import { authHeather } from "@/utils"
+import { TablasVersion } from "@/models"
+import { API } from "@/config/constants"
 
 const baseURL = API
 const versionCapturadoresUrl = baseURL + 'v1/xnetRoutes/getAllVersionCapturadores'

@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
 import {
+  GridRowModel,
   GridRowModes,
   GridRowModesModel,
   GridRowsProp,
@@ -12,44 +13,41 @@ interface EditToolbarProps {
   setRowModesModel: (
     newModel: (oldModel: GridRowModesModel) => GridRowModesModel
   ) => void;
+  rows: GridRowModel;
 }
 
-const ToolBarComponent = (props: EditToolbarProps) => {
-  const { setRows, setRowModesModel } = props;
+const ToolBarUserComponent = (props: EditToolbarProps) => {
+  const { setRows, setRowModesModel, rows } = props;
 
   const handleClick = () => {
+    console.log(rows);
+    const Id = rows[rows.length - 1].Id + 1;
+    console.log(Id);
     setRows((oldRows) => [
+      ...oldRows,
       {
-        TABLA: "",
-        CODIGO: "",
-        DESCRIPCION: "",
-        VERSION: "",
-        ACTIVO: "",
-        LINK: "",
-        SIGLAS: "",
-        LoginPorInstitucion: false,
-        Imagen: "",
-        ReportaDatos: false,
-        AccesoAInstituciones: false,
-        DescripcionHTML: "",
-        AccesoTipoInstitucion: "",
-        IdOrdenCategoria: 0,
+        Id,
+        Usuario: "",
+        EstaActivo: 0,
+        IDPerfil: 0,
         isNew: true,
       },
-      ...oldRows,
     ]);
     setRowModesModel((oldModel) => ({
-      [""]: { mode: GridRowModes.Edit, fieldToFocus: "TABLA" },
       ...oldModel,
+      [Id]: {
+        mode: GridRowModes.Edit,
+        fieldToFocus: "Usuario",
+      },
     }));
   };
 
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add record
+        Agregar Registro
       </Button>
     </GridToolbarContainer>
   );
 };
-export default ToolBarComponent;
+export default ToolBarUserComponent;

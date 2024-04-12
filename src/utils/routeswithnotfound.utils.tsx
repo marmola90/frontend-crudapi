@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { NotFound } from "../components/NotFound";
+import { NotFound } from "@/components/NotFound";
 
 interface Props {
   children: JSX.Element[] | JSX.Element;

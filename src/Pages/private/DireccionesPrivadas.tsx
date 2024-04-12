@@ -1,23 +1,24 @@
-import { Navigate, Route } from "react-router-dom";
-import { Roles, RutasPrivadas } from "../../models";
-import { lazy } from "react";
-import RoutesWithNotFound from "../../utils/routeswithnotfound.utils";
-import { Xnet } from ".";
-import { RolGuard } from "../../guards";
+import { useState } from "react";
+import RoutesWithNotFound from "@/utils/routeswithnotfound.utils";
+import { SideNav } from "@/components";
+import "./DireccionesPrivadas.style.scss";
+import { useSelector } from "react-redux";
+import { AppStore } from "@/redux/store";
+import { RutasRoles } from "@/utils/RutasRoles.utils";
 
-const Modulos = lazy(() => import("./Modulos/Modulos"));
 const DireccionesPrivadas = () => {
+  const [closeMenu, setCloseMenu] = useState(false);
+  const userState = useSelector((store: AppStore) => store.user);
+
   return (
-    <RoutesWithNotFound>
-      <Route path="/" element={<Navigate to={RutasPrivadas.MODULOS} />} />
-      <Route element={<RolGuard perfil={Roles.ADMIN} />}>
-        <Route path={RutasPrivadas.MODULOS} element={<Modulos />} />
-        <Route
-          path={`${RutasPrivadas.MODULOS}/${RutasPrivadas.XNET}`}
-          element={<Xnet />}
-        />
-      </Route>
-    </RoutesWithNotFound>
+    <>
+      <SideNav closeMenu={closeMenu} setCloseMenu={setCloseMenu} />
+      <div className={closeMenu === false ? "Container" : "Container active"}>
+        <RoutesWithNotFound>
+          {RutasRoles(userState.datos.IDPerfil)}
+        </RoutesWithNotFound>
+      </div>
+    </>
   );
 };
 export default DireccionesPrivadas;

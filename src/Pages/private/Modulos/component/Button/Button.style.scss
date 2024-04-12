@@ -1,0 +1,10 @@
+.modul {
+  cursor: pointer;
+  display: flex;
+  transition: background 2000ms linear;
+  &:hover {
+    background: #1976ce;
+    transition: background 2000ms linear;
+    color: #fff;
+  }
+}

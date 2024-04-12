@@ -1,36 +1,36 @@
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Drawer from "@mui/material/Drawer";
+//import Divider from "@mui/material/Divider";
+//import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
+//import List from "@mui/material/List";
+//import ListItem from "@mui/material/ListItem";
+//import ListItemButton from "@mui/material/ListItemButton";
+//import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+//import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-//import { clearLocalStorage } from "../../utits";
-import { resetUser } from "../../redux/states/user";
-import { ListItemIcon, ThemeProvider, createTheme } from "@mui/material";
+//import { clearLocalStorage } from "@@utits";
+import { resetUser } from "@/redux/states/user";
+import { ThemeProvider, createTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { RutasPrivadas, RutasPublicas } from "../../models";
+import { RutasPrivadas, RutasPublicas } from "@/models";
 import { useDispatch, useSelector } from "react-redux";
-import { AppStore } from "../../redux/store";
+import { AppStore } from "@/redux/store";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
-import LogoutIcon from "@mui/icons-material/Logout";
+//import LogoutIcon from "@mui/icons-material/Logout";
 
-interface Props {
+/*interface Props {
   /**
    * Injected by the documentation to work in an iframe.
    * You won't need it on your project.
    */
-  window?: () => Window;
-}
+// window?: () => Window;
+//}
 
 const darkTheme = createTheme({
   palette: {
@@ -41,18 +41,18 @@ const darkTheme = createTheme({
   },
 });
 
-const drawerWidth = 240;
+//const drawerWidth = 240;
 
-const Navbar = (props: Props) => {
-  const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+const Navbar = () => {
+  // const { window } = props;
+  //const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
   const userState = useSelector((store: AppStore) => store.user);
   const dispatch = useDispatch();
 
-  const handleDrawerToggle = () => {
+  /* const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
-  };
+  };*/
 
   const logOut = () => {
     //clearLocalStorage(userKey);
@@ -60,42 +60,6 @@ const Navbar = (props: Props) => {
 
     navigate(`${RutasPublicas.LOGIN}`, { replace: true });
   };
-
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Modulos CRUD
-      </Typography>
-      <Divider />
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton sx={{ textAlign: "center" }}>
-            {userState.token ? (
-              <Button sx={{ color: "#000" }} onClick={logOut}>
-                <LogoutIcon />
-                <ListItemText primary="LogOut" />
-              </Button>
-            ) : (
-              <ListItem disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    <AccountCircleIcon />
-                  </ListItemIcon>
-                  <Link to={RutasPublicas.LOGIN}>
-                    <ListItemText primary="Login" />
-                  </Link>
-                </ListItemButton>
-              </ListItem>
-            )}
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
-  );
-
-  const container =
-    window !== undefined ? () => window().document.body : undefined;
-
   return (
     <React.Fragment>
       <header>
@@ -107,7 +71,7 @@ const Navbar = (props: Props) => {
                   color="inherit"
                   aria-label="open drawer"
                   edge="start"
-                  onClick={handleDrawerToggle}
+                  //onClick={handleDrawerToggle}
                   sx={{ mr: 2, display: { sm: "none" } }}
                 >
                   <MenuIcon />
@@ -137,7 +101,7 @@ const Navbar = (props: Props) => {
               </Toolbar>
             </AppBar>
           </ThemeProvider>
-          <Box component="nav">
+          {/*  <Box component="nav">
             <Drawer
               container={container}
               variant="temporary"
@@ -156,7 +120,7 @@ const Navbar = (props: Props) => {
             >
               {drawer}
             </Drawer>
-          </Box>
+          </Box> */}
         </Box>
       </header>
     </React.Fragment>

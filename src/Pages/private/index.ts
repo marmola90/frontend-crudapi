@@ -1,4 +1,10 @@
+export * from './Component/RenderEditName';
+export * from './Component';
+export * from './Config/Modulos';
 export { default as DireccionesPrivadas } from './DireccionesPrivadas';
 export * from './Modulos/Xnet';
 export * from './Modulos/component/Button';
+export * from './Modulos/component/DataGrid';
+export * from './Component/Search';
+export * from './Modulos/component';
 export * from './Modulos';

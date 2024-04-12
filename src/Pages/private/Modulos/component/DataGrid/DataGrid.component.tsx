@@ -4,7 +4,8 @@ import {
   GridColDef,
   DataGridProps,
 } from "@mui/x-data-grid";
-import { TablasVersion } from "../../../../../models";
+import { TablasVersion } from "@/models";
+//import { memo } from "react";
 
 interface Props extends DataGridProps {
   rows: GridRowsProp | TablasVersion[];
@@ -27,4 +28,7 @@ const DataGridComponent = ({
     />
   );
 };
+
+//const DataGridComponent = memo(DataGrids);
+
 export default DataGridComponent;

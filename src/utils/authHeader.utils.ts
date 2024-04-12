@@ -1,4 +1,4 @@
-import { userKey } from "../redux/states/user"
+import { userKey } from "@/redux/states/user"
 
 export const authHeather = () => {
   const user = JSON.parse(localStorage.getItem(userKey) as string)

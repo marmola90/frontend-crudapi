@@ -6,16 +6,24 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import BackImage from "../../assets/L04.png";
-import { Container } from "@mui/material";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { postLogin } from "../../services";
-import { createUser } from "../../redux/states/user";
-import { useNavigate } from "react-router-dom";
-import { RutasPrivadas } from "../../models";
+import BackImage from "@/assets/L04.png";
+import { AlertProps, Container } from "@mui/material";
+import { lazy, useState } from "react";
+import { postLogin } from "@/services";
+import { createUser } from "@/redux/states/user";
+import { RutasPrivadas } from "@/models";
+import useManageSession from "@/Hooks/useManageSession";
+const TextTitleComponent = lazy(
+  () => import("@/components/TextTitle/TextTitle.component")
+);
+
+const BackdropComp = lazy(
+  () => import("@/components/Backdrop/Backdrop.component")
+);
+const SnackBarComponent = lazy(
+  () => import("@/components/SnackBar/SnackBar.component")
+);
 
 const theme = createTheme();
 
@@ -25,9 +33,15 @@ const initialSignin = {
 };
 
 const Login = () => {
-  const dispatch = useDispatch();
+  const { navigate, dispatch } = useManageSession();
   const [signIn, setsignIn] = useState(initialSignin);
-  const navigate = useNavigate();
+  const [snackbar, setSnackbar] = useState<Pick<
+    AlertProps,
+    "children" | "severity"
+  > | null>(null);
+  const [openBackdrop, setOpenBackdrop] = useState(false);
+
+  const handleCloseSnackbar = () => setSnackbar(null);
 
   const auth = async () => {
     try {
@@ -36,7 +50,19 @@ const Login = () => {
         dispatch(createUser(result));
         navigate(`/${RutasPrivadas.PRIVATE}`, { replace: true });
       } else {
-        alert("El usuario no esta activo");
+        const errorMsg = JSON.parse(result.token).lde_message;
+        (errorMsg as boolean)
+          ? setSnackbar({
+              children: "Usuario/Contraseña inválidos.",
+              severity: "error",
+            })
+          : setSnackbar({
+              children: "El usuario no esta activo.",
+              severity: "error",
+            });
+
+        setOpenBackdrop(false);
+        //alert("El usuario no esta activo");
       }
     } catch (error) {
       console.log(error);
@@ -45,6 +71,7 @@ const Login = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setOpenBackdrop(true);
     auth();
   };
 
@@ -61,6 +88,7 @@ const Login = () => {
           height: "60vh",
           maxWidth: "100%",
           width: { xs: "auto", sm: "600px", md: "1050px" },
+          marginTop: "9rem",
         }}
       >
         <Box
@@ -107,9 +135,11 @@ const Login = () => {
                 <Avatar sx={{ m: 1, bgcolor: "warning.main" }}>
                   <LockOutlinedIcon />
                 </Avatar>
-                <Typography component="h1" variant="h5">
-                  Sign in
-                </Typography>
+                <TextTitleComponent
+                  variante="h4"
+                  color="#353535de"
+                  titleName="Sign In"
+                />
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                   <TextField
                     variant="outlined"
@@ -147,7 +177,17 @@ const Login = () => {
               </Box>
             </Grid>
           </Grid>
+          {!!snackbar && (
+            <SnackBarComponent
+              snackbar={snackbar}
+              onClose={handleCloseSnackbar}
+            />
+          )}
         </Box>
+        <BackdropComp
+          openBackdrop={openBackdrop}
+          setOpenBackdrop={setOpenBackdrop}
+        />
       </Container>
     </ThemeProvider>
   );
