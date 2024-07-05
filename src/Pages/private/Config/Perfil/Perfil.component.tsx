@@ -96,6 +96,12 @@ const PerfilConfig = () => {
             severity: "success",
           });
         }
+      })
+      .catch((err) => {
+        const message = err.message.match("SESSION_NO_VALIDA")?.[0];
+        if (message === Sessions.SESSION_NO_VALIDA) {
+          managesSession(message);
+        }
       });
   };
 

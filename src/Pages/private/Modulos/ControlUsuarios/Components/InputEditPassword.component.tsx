@@ -41,19 +41,20 @@ const InputEditPassword = (props: GridRenderCellParams) => {
           apiRef.current.setEditCellValue({
             id,
             field,
-            value: pass.data.Pwd,
+            value: pass.data?.Pwd,
           });
         }
       });
   }, [apiRef, field, id]);
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    userState.datos.IDPerfil === Roles.ADMINAPP &&
-      apiRef.current.setEditCellValue({
-        id,
-        field,
-        value: event.target.value,
-      });
+    userState.datos.IDPerfil === Roles.ADMINAPP ||
+      (userState.datos.IDPerfil === Roles.CONSULADMON &&
+        apiRef.current.setEditCellValue({
+          id,
+          field,
+          value: event.target.value,
+        }));
   };
 
   const handleGeneratePass = async () => {
@@ -73,7 +74,8 @@ const InputEditPassword = (props: GridRenderCellParams) => {
         onChange={handleChange}
         fullWidth
         InputProps={{
-          endAdornment: userState.datos.IDPerfil === Roles.ADMINAPP && (
+          endAdornment: (userState.datos.IDPerfil === Roles.ADMINAPP ||
+            userState.datos.IDPerfil === Roles.CONSULADMON) && (
             <Tooltip title="Generar Password">
               <InputAdornment position="end">
                 <IconButton

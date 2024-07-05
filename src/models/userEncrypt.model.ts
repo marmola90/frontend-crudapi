@@ -14,3 +14,12 @@ export interface IUserEncrypt {
   PwdEncryted: unknown
   isEnable?: boolean
 }
+
+export interface IUserEncryptV2 extends IUserEncrypt {
+  Puestos: {
+    DBA: boolean
+    SYSADMIN: boolean
+    SUPP: boolean
+    BOSS: boolean
+  }
+}

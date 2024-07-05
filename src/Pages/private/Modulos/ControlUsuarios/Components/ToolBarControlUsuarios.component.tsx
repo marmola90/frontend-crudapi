@@ -1,7 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import { AlertProps, Button } from "@mui/material";
 import {
-  GridRowModel,
   GridRowModes,
   GridRowModesModel,
   GridRowsProp,
@@ -10,18 +9,18 @@ import {
 import { useState } from "react";
 import { SnackBarComponent } from "@/components";
 import { PermisosTypes } from "@/models";
+import { getOpcionesDefault } from "@/utils/funcionesVarias";
 
 interface EditToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
   setRowModesModel: (
     newModel: (oldModel: GridRowModesModel) => GridRowModesModel
   ) => void;
-  rows: GridRowModel;
   permisos: number[];
 }
 
 const ToolBarControlUsuarios = (props: EditToolbarProps) => {
-  const { setRows, setRowModesModel, rows, permisos } = props;
+  const { setRows, setRowModesModel, permisos } = props;
   const [snackbar, setSnackbar] = useState<Pick<
     AlertProps,
     "children" | "severity"
@@ -29,9 +28,13 @@ const ToolBarControlUsuarios = (props: EditToolbarProps) => {
 
   const handleCloseSnackbar = () => setSnackbar(null);
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    const totalIDs = await getOpcionesDefault()
+      .then((res) => res.json())
+      .then((datos) => datos.data);
+    console.log(totalIDs);
     if (permisos.includes(PermisosTypes.Insertar)) {
-      const Id = rows[rows.length - 1].Id + 1;
+      const Id = totalIDs[totalIDs.length - 1].Id + 1;
       console.log(Id);
       setRows((oldRows) => [
         {
@@ -47,6 +50,7 @@ const ToolBarControlUsuarios = (props: EditToolbarProps) => {
           Appx: false,
           isEnable: true,
           isNew: true,
+          TipoUsuario: 1,
         },
         ...oldRows,
       ]);

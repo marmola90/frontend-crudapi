@@ -1,11 +1,13 @@
 import {
   GridActionsCellItem,
   GridColDef,
+  GridFilterModel,
   GridRenderCellParams,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowsProp,
+  GridValidRowModel,
 } from "@mui/x-data-grid";
 import { ChangeEvent, lazy, useCallback, useEffect, useState } from "react";
 
@@ -31,9 +33,9 @@ import {
 } from "@/models";
 import { useSelector } from "react-redux";
 import {
-  getAllUsers,
-  getAllUsersAppXUrl,
-  getAllUsersPCSUrl,
+  // getAllUsers,
+  //  getAllUsersAppXUrl,
+  // getAllUsersPCSUrl,
   getTipoUsuarioUrl,
   postDecryptPass,
   postInsertUser,
@@ -45,6 +47,7 @@ import { Search } from "@/Pages/private/Component/Search";
 import { DataGridComponent } from "../component/DataGrid";
 import useManageSession from "@/Hooks/useManageSession";
 import useLoadData from "@/Hooks/useLoadData";
+import { getOpcionesDefault, getOpcionesID } from "@/utils/funcionesVarias";
 const SnackBarComponent = lazy(
   () => import("@/components/SnackBar/SnackBar.component")
 );
@@ -74,21 +77,25 @@ const initialModuleState: GridRowsProp = [
     FechaModificacion: "",
     Appx: false,
     isEnable: true,
+    TipoUsuario: 1,
   },
 ];
 
 const ControlUsuarios = () => {
   const userState = useSelector((store: AppStore) => store.user);
   const { managesSession } = useManageSession();
-  const getOpciones =
-    userState.datos.IDPerfil === Roles.ADMINAPP
+
+  /*  const getOpciones =
+    getOpcionesID[userState.datos.IDPerfil as number] || getOpcionesDefault; */
+  /* userState.datos.IDPerfil === Roles.ADMINAPP
       ? getAllUsers
       : userState.datos.IDPerfil === Roles.CONSULSOPORTE
       ? getAllUsersPCSUrl
       : userState.datos.IDPerfil === Roles.CONSULADMON
       ? getAllUsersAppXUrl
-      : getAllUsers;
+      : getAllUsers; */
 
+  //console.log(getOpciones());
   const {
     rows,
     setRows,
@@ -103,7 +110,11 @@ const ControlUsuarios = () => {
     handleProcessRowUpdateError,
     handleRowEditStop,
     handleRowModesModelChange,
-  } = useLoadData(initialModuleState, getOpciones, userState.datos.IDPerfil);
+  } = useLoadData(
+    initialModuleState,
+    getOpcionesID[userState.datos.IDPerfil as number] || getOpcionesDefault,
+    userState.datos.IDPerfil
+  );
   const [tipoUsuario, setTipoUsuario] = useState<ITipoUsuario[]>([]);
   const [search, setSearch] = useState("");
 
@@ -144,6 +155,7 @@ const ControlUsuarios = () => {
     });
 
     const editedRow = rows.find((row) => row.Id === id);
+
     if (editedRow!.isNew) {
       setRows(rows.filter((row) => row.Id !== id));
     }
@@ -288,7 +300,11 @@ const ControlUsuarios = () => {
       //  width:100,
       flex: 0.3,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       type: "string",
     },
     {
@@ -297,7 +313,10 @@ const ControlUsuarios = () => {
       //minWidth: 50,
       flex: 0.35,
       headerClassName: "headerGrid",
-      editable: true,
+      editable:
+        userState.datos.IDPerfil === (Roles.ADMINAPP || Roles.CONSULADMON)
+          ? true
+          : false,
       type: "string",
       renderCell: (params: GridRenderCellParams) => {
         return (
@@ -311,7 +330,11 @@ const ControlUsuarios = () => {
       headerName: "Gestor",
       flex: 0.2,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       type: "string",
     },
     {
@@ -320,7 +343,11 @@ const ControlUsuarios = () => {
       // minWidth: 200,
       flex: 0.3,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       type: "string",
     },
     {
@@ -344,7 +371,11 @@ const ControlUsuarios = () => {
       //width: 80,
       flex: 0.2,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       //align: "center",
       //type: "number",
       renderEditCell: renderSelectEditInputCell,
@@ -360,7 +391,11 @@ const ControlUsuarios = () => {
       headerName: "Uso en Apps",
       //   minWidth: 200,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       type: "boolean",
     },
     {
@@ -368,7 +403,11 @@ const ControlUsuarios = () => {
       headerName: "Habilitado",
       //   minWidth: 200,
       headerClassName: "headerGrid",
-      editable: userState.datos.IDPerfil === Roles.ADMINAPP ? true : false,
+      editable:
+        userState.datos.IDPerfil === Roles.ADMINAPP ||
+        userState.datos.IDPerfil === Roles.CONSULADMON
+          ? true
+          : false,
       type: "boolean",
     },
     {
@@ -382,7 +421,11 @@ const ControlUsuarios = () => {
       getActions: ({ id, row }) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
-        if (isInEditMode && userState.datos.IDPerfil === Roles.ADMINAPP) {
+        if (
+          (userState.datos.IDPerfil === Roles.ADMINAPP ||
+            userState.datos.IDPerfil === Roles.CONSULADMON) &&
+          isInEditMode
+        ) {
           return [
             <Tooltip title="Guardar">
               <GridActionsCellItem
@@ -452,13 +495,21 @@ const ControlUsuarios = () => {
   };
 
   console.time("Tiempo sin memo");
-  const filteredRows = rows.filter(
+  const filteredRows: GridValidRowModel[] = rows.filter(
     (item) =>
-      item.isEnable === checked &&
-      (item.Gestor?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
-        item.Usuario.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+      item.Gestor?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+      item.Usuario.toLocaleLowerCase().includes(search.toLocaleLowerCase())
   );
+  console.log({ filteredRows });
   console.timeEnd("Tiempo sin memo");
+
+  const filterModel: GridFilterModel = {
+    items: [
+      { field: "isEnable", operator: "is", value: !checked },
+      //{ field: "Gestor", operator: "equals", value: search },
+    ],
+    //    logicOperator: GridLogicOperator.Or,
+  };
 
   useEffect(() => {
     const cargarTipoUsuario = async () => {
@@ -477,6 +528,7 @@ const ControlUsuarios = () => {
     };
     cargarTipoUsuario();
   }, []);
+
   return (
     <>
       <Grid
@@ -550,10 +602,12 @@ const ControlUsuarios = () => {
                   columnVisibilityModel: {
                     // Hide columns status and traderName, the other columns will remain visible
                     isEnable: false,
+                    AppX: false,
                   },
                 },
               }}
               columns={columns}
+              filterModel={filterModel}
               rows={filteredRows}
               editMode="row"
               getRowId={(row: GridRowModel) => row.Id}
@@ -570,7 +624,6 @@ const ControlUsuarios = () => {
                 toolbar: {
                   setRows,
                   setRowModesModel,
-                  rows,
                   permisos,
                 },
               }}
