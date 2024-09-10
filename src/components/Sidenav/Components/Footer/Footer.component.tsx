@@ -5,6 +5,7 @@ import "./Footer.style.scss";
 import { RutasPublicas } from "@/models";
 import { AppStore } from "@/redux/store";
 import { resetUser } from "@/redux/states/user";
+//import { persistSessionStorage } from "@/utils";
 
 interface Props {
   closeMenu: boolean;
@@ -19,6 +20,7 @@ const FooterComponent = ({ closeMenu }: Props) => {
 
   const logOut = () => {
     //clearLocalStorage(userKey);
+   // persistSessionStorage('currentPage', window.location.pathname)
     dispatch(resetUser());
 
     navigate(`${RutasPublicas.LOGIN}`, { replace: true });

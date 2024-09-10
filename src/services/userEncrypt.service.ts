@@ -37,7 +37,7 @@ export const postInsertUser = async (user: IUserEncrypt) => {
       gestor: user.Gestor,
       aplicacion: user.DireccionApp,
       appx: user.AppX,
-      tipousuario: user.TipoUsuario
+      tipousuario: user.TipoUsuario,
     })
   })
 

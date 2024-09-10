@@ -1,4 +1,5 @@
-import { getAllUsers, getAllUsersAppXUrl, getAllUsersPCSUrl } from "@/services/userEncrypt.service";
+//import { getAllUsers, getAllUsersAppXUrl, getAllUsersPCSUrl } from "@/services/userEncrypt.service";
+import { getAllUsers, getAllUsersAppXUrl, getAllUsersPCSUrl } from "@/services/v2/userEncrypt.service";
 
 type Opciones = {
   [valor: number]: () => Promise<Response>

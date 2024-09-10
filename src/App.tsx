@@ -7,7 +7,8 @@ import { Suspense, lazy } from "react";
 import { Box, CircularProgress } from "@mui/material";
 //import { Navbar } from "./components/NavBar/index.ts";
 
-const Login = lazy(() => import("./Pages/Login/Login.tsx"));
+//const Login = lazy(() => import("./Pages/Login/Login.tsx"));
+const Login = lazy(() => import("./Pages/Login/v2/Login.tsx"));
 const Private = lazy(() => import("./Pages/private/DireccionesPrivadas.tsx"));
 
 function App() {

@@ -51,6 +51,7 @@ const ToolBarControlUsuarios = (props: EditToolbarProps) => {
           isEnable: true,
           isNew: true,
           TipoUsuario: 1,
+          Puestos: '{"DBA":1, "SYSADMIN":0, "SUPP":0, "BOSS":0}',
         },
         ...oldRows,
       ]);

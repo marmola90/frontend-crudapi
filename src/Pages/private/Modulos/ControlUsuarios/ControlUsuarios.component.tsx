@@ -1,16 +1,21 @@
 import {
   GridActionsCellItem,
   GridColDef,
-  GridFilterModel,
   GridRenderCellParams,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowsProp,
-  GridValidRowModel,
+  //GridValidRowModel,
 } from "@mui/x-data-grid";
-import { ChangeEvent, lazy, useCallback, useEffect, useState } from "react";
-
+import {
+  ChangeEvent,
+  lazy,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,23 +29,24 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
 import {
   ITipoUsuario,
-  IUserEncrypt,
+  // IUserEncrypt,
   PermisosTypes,
   Roles,
+  puestosDescripcion,
   Sessions,
+  puestos,
+  IUserEncryptV2,
 } from "@/models";
 import { useSelector } from "react-redux";
 import {
-  // getAllUsers,
-  //  getAllUsersAppXUrl,
-  // getAllUsersPCSUrl,
   getTipoUsuarioUrl,
   postDecryptPass,
   postInsertUser,
   putUpdateUser,
-} from "@/services/userEncrypt.service";
+} from "@/services/v2/userEncrypt.service";
 import { AppStore } from "@/redux/store";
 import copy from "copy-to-clipboard";
 import { Search } from "@/Pages/private/Component/Search";
@@ -48,6 +54,8 @@ import { DataGridComponent } from "../component/DataGrid";
 import useManageSession from "@/Hooks/useManageSession";
 import useLoadData from "@/Hooks/useLoadData";
 import { getOpcionesDefault, getOpcionesID } from "@/utils/funcionesVarias";
+import "./Styles/controlus.style.css";
+//import CheckPuestos from "./Components/CheckPuestos.component";
 const SnackBarComponent = lazy(
   () => import("@/components/SnackBar/SnackBar.component")
 );
@@ -61,6 +69,8 @@ const ToolBarControlUsuarios = lazy(
 const SelectTipoUsuario = lazy(
   () => import("./Components/SelectTipoUsuario.component")
 );
+
+const CheckPuestos = lazy(() => import("./Components/CheckPuestos.component"));
 
 const TextTitleComponent = lazy(
   () => import("@/components/TextTitle/TextTitle.component")
@@ -78,31 +88,22 @@ const initialModuleState: GridRowsProp = [
     Appx: false,
     isEnable: true,
     TipoUsuario: 1,
+    Puestos: "",
   },
 ];
 
 const ControlUsuarios = () => {
   const userState = useSelector((store: AppStore) => store.user);
+  const [filteredRows, setFilteredRows] = useState(initialModuleState);
+  const [isPending, startTransition] = useTransition();
   const { managesSession } = useManageSession();
-
-  /*  const getOpciones =
-    getOpcionesID[userState.datos.IDPerfil as number] || getOpcionesDefault; */
-  /* userState.datos.IDPerfil === Roles.ADMINAPP
-      ? getAllUsers
-      : userState.datos.IDPerfil === Roles.CONSULSOPORTE
-      ? getAllUsersPCSUrl
-      : userState.datos.IDPerfil === Roles.CONSULADMON
-      ? getAllUsersAppXUrl
-      : getAllUsers; */
-
-  //console.log(getOpciones());
   const {
     rows,
     setRows,
     permisos,
     rowModesModel,
     setRowModesModel,
-    cargarDatos: cargarUsuarios,
+    cargarDatos,
     setSnackbar,
     snackbar,
     openBackdrop,
@@ -116,9 +117,13 @@ const ControlUsuarios = () => {
     userState.datos.IDPerfil
   );
   const [tipoUsuario, setTipoUsuario] = useState<ITipoUsuario[]>([]);
-  const [search, setSearch] = useState("");
+  /* const [search, setSearch] = useState(""); */
 
   const [checked, setChecked] = useState(true);
+
+  useEffect(() => {
+    setFilteredRows(rows);
+  }, [rows]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
@@ -169,7 +174,7 @@ const ControlUsuarios = () => {
       )[0].IdTipo,
     };
 
-    await postInsertUser(insertUser as IUserEncrypt)
+    await postInsertUser(insertUser as IUserEncryptV2)
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
@@ -183,7 +188,7 @@ const ControlUsuarios = () => {
             children: "successfully saved",
             severity: "success",
           });
-          cargarUsuarios();
+          cargarDatos();
         }
       })
       .catch((err) => {
@@ -202,7 +207,7 @@ const ControlUsuarios = () => {
       )[0].IdTipo,
     };
     console.log({ updatedUser });
-    await putUpdateUser(updatedUser as IUserEncrypt)
+    await putUpdateUser(updatedUser as IUserEncryptV2)
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
@@ -216,7 +221,7 @@ const ControlUsuarios = () => {
             children: "successfully saved",
             severity: "success",
           });
-          cargarUsuarios();
+          cargarDatos();
         }
       })
       .catch((err) => {
@@ -292,6 +297,13 @@ const ControlUsuarios = () => {
     []
   );
 
+  const renderCheckEditInputCell: GridColDef["renderCell"] = useCallback(
+    (params: GridRenderCellParams) => {
+      return <CheckPuestos {...params} />;
+    },
+    []
+  );
+
   const columns: GridColDef[] = [
     {
       field: "Usuario",
@@ -313,10 +325,7 @@ const ControlUsuarios = () => {
       //minWidth: 50,
       flex: 0.35,
       headerClassName: "headerGrid",
-      editable:
-        userState.datos.IDPerfil === (Roles.ADMINAPP || Roles.CONSULADMON)
-          ? true
-          : false,
+      editable: true,
       type: "string",
       renderCell: (params: GridRenderCellParams) => {
         return (
@@ -411,6 +420,46 @@ const ControlUsuarios = () => {
       type: "boolean",
     },
     {
+      field: "Puestos",
+      headerName: "Compartido con",
+      //  minWidth: 50,
+      //width: 80,
+      flex: 0.5,
+      headerClassName: "headerGrid",
+      editable: true,
+      renderCell: (params: GridRenderCellParams) => {
+        console.log({ eje: params.value });
+        const dato =
+          params.value !== "" ? JSON.parse(params.value) : params.value;
+        console.log(dato);
+
+        return (
+          <>
+            <FormControlLabel
+              control={<Checkbox checked={dato?.DBA} size="small" readOnly />}
+              label={puestosDescripcion[puestos.DBA]}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox checked={dato?.SYSADMIN} size="small" readOnly />
+              }
+              label={puestosDescripcion[puestos.SYSADMIN]}
+            />
+
+            <FormControlLabel
+              control={<Checkbox checked={dato?.SUPP} size="small" readOnly />}
+              label={puestosDescripcion[puestos.SUPP]}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={dato?.BOSS} size="small" readOnly />}
+              label={puestosDescripcion[puestos.BOSS]}
+            />
+          </>
+        );
+      },
+      renderEditCell: renderCheckEditInputCell,
+    },
+    {
       field: "actions",
       type: "actions",
       headerName: "Actions ",
@@ -491,25 +540,38 @@ const ControlUsuarios = () => {
   ];
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
+    const value = e.target.value;
+    // setSearch(e.target.value);
+    console.log({ rows });
+    startTransition(() => {
+      setFilteredRows(
+        rows.filter(
+          (item) =>
+            item.isEnable === checked &&
+            (item.Gestor?.toLocaleLowerCase().includes(
+              value.toLocaleLowerCase()
+            ) ||
+              item.Usuario.toLocaleLowerCase().includes(
+                value.toLocaleLowerCase()
+              ))
+        )
+      );
+    });
   };
 
-  console.time("Tiempo sin memo");
+  /*   console.time("Tiempo sin memo");
   const filteredRows: GridValidRowModel[] = rows.filter(
     (item) =>
-      item.Gestor?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
-      item.Usuario.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      item.isEnable === checked &&
+      (item.Gestor?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+        item.Usuario.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
   );
   console.log({ filteredRows });
-  console.timeEnd("Tiempo sin memo");
+  console.timeEnd("Tiempo sin memo"); */
 
-  const filterModel: GridFilterModel = {
-    items: [
-      { field: "isEnable", operator: "is", value: !checked },
-      //{ field: "Gestor", operator: "equals", value: search },
-    ],
-    //    logicOperator: GridLogicOperator.Or,
-  };
+  /*   const filterModel: GridFilterModel = {
+    items: [{ field: "isEnable", operator: "is", value: !checked }],
+  }; */
 
   useEffect(() => {
     const cargarTipoUsuario = async () => {
@@ -595,19 +657,30 @@ const ControlUsuarios = () => {
             label="Usuarios Habilitados"
             sx={{ mb: 3 }}
           />
-          <Box sx={{ height: 700 }}>
+          <Box id="gridTest">
             <DataGridComponent
               initialState={{
                 columns: {
                   columnVisibilityModel: {
                     // Hide columns status and traderName, the other columns will remain visible
                     isEnable: false,
-                    AppX: false,
+                    Puestos:
+                      userState.datos.IDPerfil === Roles.CONSULSOPORTE
+                        ? false
+                        : true,
+                    AppX:
+                      userState.datos.IDPerfil === Roles.CONSULSOPORTE
+                        ? false
+                        : true,
+                    DireccionApp:
+                      userState.datos.IDPerfil === Roles.CONSULSOPORTE
+                        ? false
+                        : true,
                   },
                 },
               }}
               columns={columns}
-              filterModel={filterModel}
+              /* filterModel={filterModel} */
               rows={filteredRows}
               editMode="row"
               getRowId={(row: GridRowModel) => row.Id}
@@ -627,7 +700,7 @@ const ControlUsuarios = () => {
                   permisos,
                 },
               }}
-              loading={openBackdrop}
+              loading={isPending || openBackdrop}
             />
             {!!snackbar && (
               <SnackBarComponent

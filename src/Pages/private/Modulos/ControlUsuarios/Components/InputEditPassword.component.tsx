@@ -9,12 +9,12 @@ import {
 import { GridRenderCellParams, useGridApiContext } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import { SnackBarComponent } from "@/components";
-import { postDecryptPass } from "@/services/userEncrypt.service";
 import PasswordIcon from "@mui/icons-material/Password";
 import { generarPass } from "@/utils";
-import { useSelector } from "react-redux";
-import { AppStore } from "@/redux/store";
 import { Roles } from "@/models";
+import { AppStore } from "@/redux/store/v2/store";
+import { useSelector } from "react-redux/es/hooks/useSelector";
+import { postDecryptPass } from "@/services/v2";
 
 const InputEditPassword = (props: GridRenderCellParams) => {
   const { id, value, field } = props;
@@ -48,13 +48,13 @@ const InputEditPassword = (props: GridRenderCellParams) => {
   }, [apiRef, field, id]);
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    userState.datos.IDPerfil === Roles.ADMINAPP ||
-      (userState.datos.IDPerfil === Roles.CONSULADMON &&
-        apiRef.current.setEditCellValue({
-          id,
-          field,
-          value: event.target.value,
-        }));
+    (userState.datos.IDPerfil === Roles.ADMINAPP ||
+      userState.datos.IDPerfil === Roles.CONSULADMON) &&
+      apiRef.current.setEditCellValue({
+        id,
+        field,
+        value: event.target.value,
+      });
   };
 
   const handleGeneratePass = async () => {

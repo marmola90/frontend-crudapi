@@ -1,0 +1,9 @@
+#gridTest {
+  height: 700px;
+}
+
+@media screen and (max-width: 1280px), (max-width: 1366px) {
+  #gridTest {
+    height: 450px;
+  }
+}

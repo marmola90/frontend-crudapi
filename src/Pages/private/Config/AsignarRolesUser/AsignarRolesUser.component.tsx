@@ -3,10 +3,11 @@ import { AlertProps, Button, Grid, IconButton } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import { IItems, IUser, Sessions } from "@/models";
-import { asignarUser, getAllUsers, getUserAsignados } from "@/services";
+import { asignarUser, getUserAsignados } from "@/services";
 import { SnackBarComponent } from "@/components";
 import { CustomListComponent } from "../..";
 import useManageSession from "@/Hooks/useManageSession";
+import { getOpcionesDefault } from "@/utils/funcionesVarias";
 
 const not = (a: IItems[], b: IItems[]) => {
   return a.filter((value) => b.indexOf(value) === -1);
@@ -169,7 +170,7 @@ const AsignarRolesConfig = ({ perfilId, available }: Props) => {
   };
 
   const cargarUsers = async () => {
-    await getAllUsers()
+    await getOpcionesDefault()
       .then((res) => res.json())
       .then((datos) => {
         console.log(datos);

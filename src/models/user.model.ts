@@ -1,4 +1,4 @@
-import { IPerfil, Roles } from "."
+import { IPerfil, Roles, puestos } from "."
 
 export interface UserInfo {
   token: string | null
@@ -23,4 +23,14 @@ export interface IUserAsignado {
 export interface IRolesCantidadAsignados {
   Descripcion: string
   Cantidad: number
+}
+
+export interface IUserInfoV2 {
+  token: string | null
+  datos: {
+    Usuario: string | null,
+    EstaActivo: boolean | null | string,
+    IDPerfil: Roles,
+    IDPuestos: puestos
+  }
 }

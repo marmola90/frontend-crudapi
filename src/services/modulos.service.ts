@@ -24,7 +24,8 @@ export const insertModulo = async (modulo: IModulos) => {
     headers: authHeather(),
     body: JSON.stringify({
       Descripcion, BDAsociada
-    })
+    }),
+
   })
 
   return response
